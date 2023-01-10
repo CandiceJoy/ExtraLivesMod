@@ -12,13 +12,11 @@ class ExtraLivesEventHandler : StaticEventHandler
 	protected CVar extra_lives;
 	protected int tick;
 	protected PlayerInfo p;
-	bool reset;
+	protected int reset;
 
 	//The player has died; send them a message depending on whether they have lives or not.
 	override void PlayerDied(PlayerEvent e)
 	{
-		reduceLives();
-
 		if(hasLivesLeft())
 		{
 			Console.Printf(TEXTCOLOR_GREEN .. "You are lucky that I am merciful, "..getName());
@@ -26,13 +24,13 @@ class ExtraLivesEventHandler : StaticEventHandler
 		else
 		{
 			Console.Printf(TEXTCOLOR_RED .. "You are out of chances, "..getName());
+			Console.Printf(TEXTCOLOR_RED .. "Press 'use' to continue if you are a wimp");
 		}
 	}
 
 	//Mod Initialisation
 	override void PlayerEntered(PlayerEvent e)
 	{
-		Console.Printf("PlayerEntered!!!");
 		p = players[e.PlayerNumber];
 		extra_lives = CVar.GetCVar("extra_lives",p);
 		default_extra_lives = CVar.GetCVar("default_extra_lives",p);
@@ -48,8 +46,18 @@ class ExtraLivesEventHandler : StaticEventHandler
 	//New Game flag; no PlayerInfo yet, so we delay until the player exists
 	override void NewGame()
 	{
-		Console.Printf("NewGame!!!");
 		reset = true;
+	}
+
+	override void PlayerRespawned(PlayerEvent e)
+	{
+		if( getLives() <= 0 )
+		{
+			die("Did you really think I'd allow that, %s?");
+			return;
+		}
+
+		reduceLives();
 	}
 
 	//Processes the resurrect delay so it doesn't happen immediately
@@ -70,11 +78,6 @@ class ExtraLivesEventHandler : StaticEventHandler
 		}
 	}
 
-	override void WorldLoaded(WorldEvent e)
-	{
-		Console.Printf("WORLD LOAD");
-	}
-
 	//Renders the HUD overlay; note that it uses multiplicative scaling
 	//Therefore, it will not render in the same pixel-perfect position
 	//On all resolutions
@@ -93,6 +96,16 @@ class ExtraLivesEventHandler : StaticEventHandler
 		}
 
 		Screen.DrawText(bigfont, livesColour, Screen.GetWidth()*(SCALE_X), Screen.GetHeight()*(SCALE_Y), "Lives: "..extra_lives.GetInt(), DTA_Spacing, SPACING, DTA_ScaleX, SCALE, DTA_ScaleY, SCALE);
+	}
+
+	//Terminate the player with extreme prejudice ;)
+	void die(string msg)
+	{
+		//Console.Printf(TEXTCOLOR_RED .. "Thought you could cheat, did you, %s?\n", getName());
+		Console.Printf(TEXTCOLOR_RED .. msg .. "\n", getName());
+		p.health = 0;
+		p.playerstate = PST_DEAD;
+		setLives(0);
 	}
 
 	//Get default number of lives
@@ -141,7 +154,7 @@ class ExtraLivesEventHandler : StaticEventHandler
 	{
 		p.Resurrect();
 		tick = 0;
-		Console.Printf(TEXTCOLOR_ORANGE .. "Do not disappoint me this time, %s\n", getName(), getLives(),livesWord());
+		Console.Printf(TEXTCOLOR_ORANGE .. "Do not disappoint me this time, %s\n", getName());
 	}
 
 	//Returns the player's name

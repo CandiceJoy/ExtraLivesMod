@@ -1,5 +1,4 @@
 gameinfo
 {
 	AddEventHandlers = "ExtraLivesEventHandler"
-	StatusBarClass = "ExtraLivesStatusBar"
 }
