@@ -1,0 +1,2 @@
+user int default_extra_lives = 5;
+user int extra_lives = -1;

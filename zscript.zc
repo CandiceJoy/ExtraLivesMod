@@ -1,0 +1,163 @@
+Version "4.8.0"
+
+class ExtraLivesEventHandler : StaticEventHandler
+{
+	const RES_DELAY = 200;
+	const SCALE = 3;
+	const SPACING = 0;
+	const SCALE_X = .02;
+	const SCALE_Y = .83;
+
+	protected CVar default_extra_lives;
+	protected CVar extra_lives;
+	protected int tick;
+	protected PlayerInfo p;
+
+	//The player has died; send them a message depending on whether they have lives or not.
+	override void PlayerDied(PlayerEvent e)
+	{
+		reduceLives();
+
+		if(hasLivesLeft())
+		{
+			Console.Printf(TEXTCOLOR_GREEN .. "You are lucky that I am merciful, "..getName());
+		}
+		else
+		{
+			Console.Printf(TEXTCOLOR_RED .. "You are out of chances, "..getName());
+		}
+	}
+
+	//Mod Initialisation
+	override void PlayerEntered(PlayerEvent e)
+	{
+		if( p )
+		{
+			return;
+		}
+
+		Console.Printf("Init A");
+		p = players[e.PlayerNumber];
+		Console.Printf("Init B");
+		extra_lives = CVar.GetCVar("extra_lives",p);
+		Console.Printf("Init C");
+		default_extra_lives = CVar.GetCVar("default_extra_lives",p);
+		Console.Printf("Init D");
+		setLives(getDefaultLives());
+		Console.Printf("Init E");
+		tick = 0;
+		Console.Printf("Init F");
+	}
+
+	//Processes the resurrect delay so it doesn't happen immediately
+	//This should only not immediately return when the player is dead
+	override void WorldTick()
+	{
+		if( !isDead() || !hasLivesLeft() )
+		{
+			tick = 0;
+			return;
+		}
+
+		tick++;
+
+		if( tick >= RES_DELAY )
+		{
+			resurrect();
+		}
+	}
+
+	//Renders the HUD overlay; note that it uses multiplicative scaling
+	//Therefore, it will not render in the same pixel-perfect position
+	//On all resolutions
+	override void renderOverlay(RenderEvent event)
+	{
+		int lives = CVar.GetCVar("extra_lives",p).GetInt();
+		int livesColour = Font.CR_GREEN;
+
+		if( lives == 0 )
+		{
+			livesColour = Font.CR_RED;
+		}
+		else if( lives == 1 )
+		{
+			livesColour = Font.CR_YELLOW;
+		}
+
+		Screen.DrawText(bigfont, livesColour, Screen.GetWidth()*(SCALE_X), Screen.GetHeight()*(SCALE_Y), "Lives: "..extra_lives.GetInt(), DTA_Spacing, SPACING, DTA_ScaleX, SCALE, DTA_ScaleY, SCALE);
+	}
+
+	//Get default number of lives
+	int getDefaultLives()
+	{
+		return default_extra_lives.GetInt();
+	}
+
+	//Get lives remaining
+	int getLives()
+	{
+		if( extra_lives.GetInt() < 0 )
+		{
+			extra_lives.SetInt(getDefaultLives());
+		}
+
+		return extra_lives.GetInt();
+	}
+
+	//Set lives to a specific value
+	int setLives(int lives)
+	{
+		if( lives < 0 )
+		{
+			lives = 0;
+		}
+
+		extra_lives.SetInt(lives);
+		return getLives();
+	}
+
+	//Reduce lives by 1
+	int reduceLives()
+	{
+		return setLives(getLives()-1);
+	}
+
+	//Does the player have lives left?
+	bool hasLivesLeft()
+	{
+		return getLives() > 0;
+	}
+
+	//Resurrect the player
+	void resurrect()
+	{
+		p.Resurrect();
+		tick = 0;
+		Console.Printf(TEXTCOLOR_ORANGE .. "Do not disappoint me this time, %s\n", getName(), getLives(),livesWord());
+	}
+
+	//Returns the player's name
+	string getName()
+	{
+		return p.GetUserName();
+	}
+
+	//Get the correct version of the word "lives"
+	string livesWord()
+	{
+		if( getLives() == 1 )
+		{
+			return "life";
+		}
+		else
+		{
+			return "lives";
+		}
+	}
+
+	//Is the player dead?
+	bool isDead()
+	{
+		return p.playerstate == PST_DEAD;
+	}
+}

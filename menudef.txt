@@ -1,0 +1,10 @@
+AddOptionMenu "OptionsMenu"
+{
+	SubMenu "Extra Lives Options", "ExtraLivesOptions"
+}
+
+OptionMenu "ExtraLivesOptions" protected
+{
+	Title "Extra Lives"
+	Slider "Starting Lives", "default_extra_lives", 0, 32, 1
+}
