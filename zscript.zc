@@ -12,6 +12,7 @@ class ExtraLivesEventHandler : StaticEventHandler
 	protected CVar extra_lives;
 	protected int tick;
 	protected PlayerInfo p;
+	bool reset;
 
 	//The player has died; send them a message depending on whether they have lives or not.
 	override void PlayerDied(PlayerEvent e)
@@ -31,22 +32,24 @@ class ExtraLivesEventHandler : StaticEventHandler
 	//Mod Initialisation
 	override void PlayerEntered(PlayerEvent e)
 	{
-		if( p )
-		{
-			return;
-		}
-
-		Console.Printf("Init A");
+		Console.Printf("PlayerEntered!!!");
 		p = players[e.PlayerNumber];
-		Console.Printf("Init B");
 		extra_lives = CVar.GetCVar("extra_lives",p);
-		Console.Printf("Init C");
 		default_extra_lives = CVar.GetCVar("default_extra_lives",p);
-		Console.Printf("Init D");
-		setLives(getDefaultLives());
-		Console.Printf("Init E");
 		tick = 0;
-		Console.Printf("Init F");
+
+		if( reset )
+		{
+			setLives(getDefaultLives());
+			reset = false;
+		}
+	}
+
+	//New Game flag; no PlayerInfo yet, so we delay until the player exists
+	override void NewGame()
+	{
+		Console.Printf("NewGame!!!");
+		reset = true;
 	}
 
 	//Processes the resurrect delay so it doesn't happen immediately
@@ -65,6 +68,11 @@ class ExtraLivesEventHandler : StaticEventHandler
 		{
 			resurrect();
 		}
+	}
+
+	override void WorldLoaded(WorldEvent e)
+	{
+		Console.Printf("WORLD LOAD");
 	}
 
 	//Renders the HUD overlay; note that it uses multiplicative scaling
