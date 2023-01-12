@@ -17,7 +17,11 @@ class ExtraLivesEventHandler : StaticEventHandler
 	//The player has died; send them a message depending on whether they have lives or not.
 	override void PlayerDied(PlayerEvent e)
 	{
-		if(hasLivesLeft())
+		if( getLives() == 1 )
+		{
+			Console.Printf(TEXTCOLOR_YELLOW .. "I am done helping you, "..getName());
+		}
+		else if(hasLivesLeft())
 		{
 			Console.Printf(TEXTCOLOR_GREEN .. "You are lucky that I am merciful, "..getName());
 		}
@@ -53,7 +57,8 @@ class ExtraLivesEventHandler : StaticEventHandler
 	{
 		if( getLives() <= 0 )
 		{
-			die("Did you really think I'd allow that, %s?");
+			Console.Printf(TEXTCOLOR_RED .. "Did you really think I'd allow that, %s?\n", getName());
+			die();
 			return;
 		}
 
@@ -98,11 +103,21 @@ class ExtraLivesEventHandler : StaticEventHandler
 		Screen.DrawText(bigfont, livesColour, Screen.GetWidth()*(SCALE_X), Screen.GetHeight()*(SCALE_Y), "Lives: "..extra_lives.GetInt(), DTA_Spacing, SPACING, DTA_ScaleX, SCALE, DTA_ScaleY, SCALE);
 	}
 
-	//Terminate the player with extreme prejudice ;)
-	void die(string msg)
+	//Prevent pressing 'use' while dead
+	override bool InputProcess(InputEvent e)
 	{
-		//Console.Printf(TEXTCOLOR_RED .. "Thought you could cheat, did you, %s?\n", getName());
-		Console.Printf(TEXTCOLOR_RED .. msg .. "\n", getName());
+		if( Bindings.GetBinding(e.keyScan) == "+use" )
+		{
+			Console.Printf(TEXTCOLOR_RED .. "Did you really thing it'd be that easy, %s?\n", getName());
+			return true;
+		}
+
+		return false;
+	}
+
+	//Terminate the player with extreme prejudice ;)
+	void die()
+	{
 		p.health = 0;
 		p.playerstate = PST_DEAD;
 		setLives(0);
