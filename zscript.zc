@@ -19,15 +19,15 @@ class ExtraLivesEventHandler : StaticEventHandler
 	{
 		if( getLives() == 1 )
 		{
-			Console.Printf(TEXTCOLOR_YELLOW .. "I am done helping you, "..getName());
+			Console.Printf(TEXTCOLOR_YELLOW .. "I am done helping you, "..p.GetUserName());
 		}
 		else if(hasLivesLeft())
 		{
-			Console.Printf(TEXTCOLOR_GREEN .. "You are lucky that I am merciful, "..getName());
+			Console.Printf(TEXTCOLOR_GREEN .. "You are lucky that I am merciful, "..p.GetUserName());
 		}
 		else
 		{
-			Console.Printf(TEXTCOLOR_RED .. "You are out of chances, "..getName());
+			Console.Printf(TEXTCOLOR_RED .. "You are out of chances, "..p.GetUserName());
 			Console.Printf(TEXTCOLOR_RED .. "Press 'use' to continue if you are a wimp");
 		}
 	}
@@ -108,7 +108,7 @@ class ExtraLivesEventHandler : StaticEventHandler
 	{
 		if( Bindings.GetBinding(e.keyScan) == "+use" )
 		{
-			Console.Printf(TEXTCOLOR_RED .. "Did you really thing it'd be that easy, %s?\n", getName());
+			Console.Printf(TEXTCOLOR_RED .. "Did you really thing it'd be that easy, %s?\n", p.GetUserName());
 			return true;
 		}
 
