@@ -53,6 +53,22 @@ class ExtraLivesEventHandler : StaticEventHandler
 		reset = true;
 	}
 
+	override void PlayerSpawned(PlayerEvent e)
+	{
+		if(!Level.IsCrouchingAllowed() && !Level.IsJumpingAllowed())
+		{
+			Console.Printf(TEXTCOLOR_RED .. "Crouching and Jumping are not allowed here.\n");
+		}
+		else if(!Level.IsCrouchingAllowed())
+		{
+			Console.Printf(TEXTCOLOR_RED .. "Crouching is not allowed here.\n");
+		}
+		else if(!Level.IsJumpingAllowed())
+		{
+			Console.Printf(TEXTCOLOR_RED .. "Jumping is not allowed here.\n");
+		}
+	}
+
 	override void PlayerRespawned(PlayerEvent e)
 	{
 		if( getLives() <= 0 )
@@ -69,7 +85,7 @@ class ExtraLivesEventHandler : StaticEventHandler
 	//This should only not immediately return when the player is dead
 	override void WorldTick()
 	{
-		if( !isDead() || !hasLivesLeft() )
+		if( p.playerstate != PST_DEAD || !hasLivesLeft() )
 		{
 			tick = 0;
 			return;
@@ -106,7 +122,7 @@ class ExtraLivesEventHandler : StaticEventHandler
 	//Prevent pressing 'use' while dead
 	override bool InputProcess(InputEvent e)
 	{
-		if( Bindings.GetBinding(e.keyScan) == "+use" )
+		if( p.playerstate == PST_DEAD && Bindings.GetBinding(e.keyScan) == "+use" )
 		{
 			Console.Printf(TEXTCOLOR_RED .. "Did you really thing it'd be that easy, %s?\n", p.GetUserName());
 			return true;
@@ -189,11 +205,5 @@ class ExtraLivesEventHandler : StaticEventHandler
 		{
 			return "lives";
 		}
-	}
-
-	//Is the player dead?
-	bool isDead()
-	{
-		return p.playerstate == PST_DEAD;
 	}
 }
